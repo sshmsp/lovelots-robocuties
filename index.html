@@ -29,7 +29,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 0; /* keep canvas behind content */
+    z-index: 0; 
     pointer-events: none;
   }
 
@@ -51,11 +51,11 @@
     padding: 2rem;
     margin-bottom: 2rem;
     text-align: center;
-    display: none; /* hide all steps by default */
+    display: none; 
   }
 
   .step.active {
-    display: block; /* show active step */
+    display: block; 
   }
 
   .btn {
@@ -497,45 +497,49 @@
   });
 
   // Audio mute toggle
-  const audio = document.getElementById("bg-music");
-  const btn = document.getElementById("mute-toggle-btn");
-  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  const track = audioContext.createMediaElementSource(audio);
-  track.connect(audioContext.destination);
+const audio = document.getElementById('bg-music');
+const btn = document.getElementById('mute-toggle-btn');
+const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+const track = audioContext.createMediaElementSource(audio);
+track.connect(audioContext.destination);
 
-  function enableAudio() {
-    if (audioContext.state === "suspended") {
-      audioContext.resume().then(() => {
-        audio.play().catch((e) => console.log("Autoplay prevented:", e));
-      });
-    } else {
-      audio.play().catch((e) => console.log("Autoplay prevented:", e));
-    }
-    document.removeEventListener("click", enableAudio);
-    document.removeEventListener("keydown", enableAudio);
-  }
-
-  document.addEventListener("click", enableAudio);
-  document.addEventListener("keydown", enableAudio);
-
-  btn.addEventListener("click", () => {
-    if (audio.muted) {
+async function enableAudio() {
+  if (audioContext.state === 'suspended') {
+    try {
+      await audioContext.resume();
+      await audio.play();
+      btn.textContent = 'Mute Music';
       audio.muted = false;
-      if (audioContext.state === "suspended") {
-        audioContext.resume().then(() => {
-          audio.play().catch((e) => console.log("Play after resume failed:", e));
-        });
-      } else {
-        audio.play().catch((e) => console.log("Play failed:", e));
-      }
-      btn.textContent = "Mute Music";
-    } else {
-      audio.muted = true;
-      audio.pause();
-      btn.textContent = "Unmute Music";
+    } catch (e) {
+      console.log('Autoplay prevented or audio play error:', e);
     }
-  });
+  }
+  document.removeEventListener('click', enableAudio);
+  document.removeEventListener('keydown', enableAudio);
+}
+
+// Enable audio on user interaction anywhere on document
+document.addEventListener('click', enableAudio);
+document.addEventListener('keydown', enableAudio);
+
+btn.addEventListener('click', async () => {
+  try {
+    if (audio.muted) {
+      await audioContext.resume();
+      await audio.play();
+      audio.muted = false;
+      btn.textContent = 'Mute Music';
+    } else {
+      audio.pause();
+      audio.muted = true;
+      btn.textContent = 'Unmute Music';
+    }
+  } catch (e) {
+    console.log('Audio play/pause error:', e);
+  }
+});
 </script>
 </body>
 
 </html>
+
