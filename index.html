@@ -495,12 +495,14 @@
     });
   });
 
-  const audio = document.getElementById('bg-music');
-  const btn = document.getElementById('mute-toggle-btn');
-  let audioContext;
-  let track;
+const audio = document.getElementById('bg-music');
+const btn = document.getElementById('mute-toggle-btn');
+let audioContext;
+let track;
 
-  async function initAudio() {
+btn.addEventListener('click', async () => {
+  try {
+    // Initialize and resume AudioContext on first interaction
     if (!audioContext) {
       audioContext = new (window.AudioContext || window.webkitAudioContext)();
       track = audioContext.createMediaElementSource(audio);
@@ -509,26 +511,23 @@
     if (audioContext.state === 'suspended') {
       await audioContext.resume();
     }
-  }
-
-  btn.addEventListener('click', async () => {
-    try {
-      await initAudio();
-      if (audio.paused || audio.muted) {
-        audio.muted = false;
-        await audio.play();
-        btn.textContent = 'Mute Music';
-      } else {
-        audio.pause();
-        audio.muted = true;
-        btn.textContent = 'Unmute Music';
-      }
-    } catch (e) {
-      console.error('Audio play error:', e);
+    
+    if (audio.paused || audio.muted) {
+      audio.muted = false;
+      await audio.play();  // Explicitly play audio on user interaction
+      btn.textContent = 'Mute Music';
+    } else {
+      audio.pause();
+      audio.muted = true;
+      btn.textContent = 'Unmute Music';
     }
-  });
+  } catch (e) {
+    console.error('Audio play error:', e);
+  }
+});
 
 </script>
 </body>
 
 </html>
+
