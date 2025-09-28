@@ -272,8 +272,7 @@
       <p class="mt-8 text-gray-500">Made with…67…</p>
     </div>
   </div>
-
-  <audio id="bg-music" src="Ts pmo.mp3" loop></audio>
+  <audio id="bg-music" src="Ts pmo.mp3" loop playsinline></audio>
   <button id="mute-toggle-btn">Unmute Music</button>
 </div>
 
@@ -496,50 +495,42 @@
     });
   });
 
-  // Audio mute toggle
-const audio = document.getElementById('bg-music');
-const btn = document.getElementById('mute-toggle-btn');
-const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-const track = audioContext.createMediaElementSource(audio);
-track.connect(audioContext.destination);
+ // Audio playback on user interaction pattern:
+  const audio = document.getElementById('bg-music');
+  const btn = document.getElementById('mute-toggle-btn');
+  let audioContext;
+  let track;
 
-async function enableAudio() {
-  if (audioContext.state === 'suspended') {
+  async function startAudio() {
     try {
-      await audioContext.resume();
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        track = audioContext.createMediaElementSource(audio);
+        track.connect(audioContext.destination);
+      }
+      if (audioContext.state === 'suspended') {
+        await audioContext.resume();
+      }
       await audio.play();
-      btn.textContent = 'Mute Music';
       audio.muted = false;
+      btn.textContent = 'Mute Music';
     } catch (e) {
-      console.log('Autoplay prevented or audio play error:', e);
+      console.log('Audio play error:', e);
     }
   }
-  document.removeEventListener('click', enableAudio);
-  document.removeEventListener('keydown', enableAudio);
-}
 
-// Enable audio on user interaction anywhere on document
-document.addEventListener('click', enableAudio);
-document.addEventListener('keydown', enableAudio);
-
-btn.addEventListener('click', async () => {
-  try {
-    if (audio.muted) {
-      await audioContext.resume();
-      await audio.play();
-      audio.muted = false;
-      btn.textContent = 'Mute Music';
+  btn.addEventListener('click', async () => {
+    if (audio.muted || audio.paused) {
+      await startAudio();
     } else {
       audio.pause();
       audio.muted = true;
       btn.textContent = 'Unmute Music';
     }
-  } catch (e) {
-    console.log('Audio play/pause error:', e);
-  }
-});
+  });
 </script>
 </body>
 
 </html>
+
 
