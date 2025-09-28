@@ -277,7 +277,7 @@
 </div>
 
 <script>
-  // Three.js Number Background setup (keep your existing code unchanged)
+  // Three.js Number Background setup (same as original)
   const container = document.getElementById("canvas-container");
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -500,48 +500,35 @@
   let audioContext;
   let track;
 
-  async function startAudio() {
-    try {
-      if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        track = audioContext.createMediaElementSource(audio);
-        track.connect(audioContext.destination);
-      }
-      // Check if the audio context is suspended and resume it
-      if (audioContext.state === 'suspended') {
-        await audioContext.resume();
-      }
-
-      // Play the audio after user interaction (click)
-      await audio.play();
-      audio.muted = false; // Ensure audio isn't muted
-      btn.textContent = 'Mute Music'; // Change button text
-    } catch (e) {
-      console.log('Audio play error:', e);
+  async function initAudio() {
+    if (!audioContext) {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      track = audioContext.createMediaElementSource(audio);
+      track.connect(audioContext.destination);
+    }
+    if (audioContext.state === 'suspended') {
+      await audioContext.resume();
     }
   }
 
-  // Mute/Unmute Toggle Button
   btn.addEventListener('click', async () => {
-    if (audio.muted || audio.paused) {
-      await startAudio(); // Start audio if paused or muted
-    } else {
-      audio.pause(); // Pause if playing
-      audio.muted = true; // Mute the audio
-      btn.textContent = 'Unmute Music'; // Change button text
+    try {
+      await initAudio();
+      if (audio.paused || audio.muted) {
+        audio.muted = false;
+        await audio.play();
+        btn.textContent = 'Mute Music';
+      } else {
+        audio.pause();
+        audio.muted = true;
+        btn.textContent = 'Unmute Music';
+      }
+    } catch (e) {
+      console.error('Audio play error:', e);
     }
   });
 
-  // Ensuring Audio is Triggered by User Interaction:
-  window.addEventListener('click', async () => {
-    if (audio.paused && !audio.muted) {
-      await startAudio(); // Start the audio when user clicks anywhere (for mobile devices)
-    }
-  });
 </script>
 </body>
 
 </html>
-
-
-
