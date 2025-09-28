@@ -495,7 +495,6 @@
     });
   });
 
- // Audio playback on user interaction pattern:
   const audio = document.getElementById('bg-music');
   const btn = document.getElementById('mute-toggle-btn');
   let audioContext;
@@ -508,29 +507,41 @@
         track = audioContext.createMediaElementSource(audio);
         track.connect(audioContext.destination);
       }
+      // Check if the audio context is suspended and resume it
       if (audioContext.state === 'suspended') {
         await audioContext.resume();
       }
+
+      // Play the audio after user interaction (click)
       await audio.play();
-      audio.muted = false;
-      btn.textContent = 'Mute Music';
+      audio.muted = false; // Ensure audio isn't muted
+      btn.textContent = 'Mute Music'; // Change button text
     } catch (e) {
       console.log('Audio play error:', e);
     }
   }
 
+  // Mute/Unmute Toggle Button
   btn.addEventListener('click', async () => {
     if (audio.muted || audio.paused) {
-      await startAudio();
+      await startAudio(); // Start audio if paused or muted
     } else {
-      audio.pause();
-      audio.muted = true;
-      btn.textContent = 'Unmute Music';
+      audio.pause(); // Pause if playing
+      audio.muted = true; // Mute the audio
+      btn.textContent = 'Unmute Music'; // Change button text
+    }
+  });
+
+  // Ensuring Audio is Triggered by User Interaction:
+  window.addEventListener('click', async () => {
+    if (audio.paused && !audio.muted) {
+      await startAudio(); // Start the audio when user clicks anywhere (for mobile devices)
     }
   });
 </script>
 </body>
 
 </html>
+
 
 
